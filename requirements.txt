@@ -6,4 +6,6 @@ python-dotenv==0.19.2
 playwright==1.30.0
 gunicorn==21.2.0
 flask-cors==3.0.10
+waitress==2.1.2
+
 
