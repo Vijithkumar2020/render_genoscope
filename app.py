@@ -13,6 +13,9 @@ from waitress import serve
 import os
 from dotenv import load_dotenv
 
+print(f"Starting application with environment variables:")
+print(f"PORT: {os.environ.get('PORT')}")
+print(f"ENVIRONMENT: {os.environ.get('ENVIRONMENT')}")
 # Add this near the top of your file, after imports
 def initialize_playwright():
     import asyncio
@@ -64,7 +67,24 @@ def extract_clinvar_data(url):
     """
     with sync_playwright() as p:
         # Launch browser with more options for reliability
-        browser = p.chromium.launch(headless=True)
+        browser_args = []
+        
+        # Add production-specific configurations
+        if os.environ.get('ENVIRONMENT') == 'production':
+            browser_args = [
+                '--disable-dev-shm-usage',
+                '--disable-setuid-sandbox',
+                '--no-sandbox',
+                '--single-process',
+                # This is crucial - tells Playwright not to use port 10000
+                '--remote-debugging-port=0'  # Use a random port instead
+            ]
+        
+        browser = p.chromium.launch(
+            headless=True,
+            args=browser_args  # Pass the browser arguments
+        )
+        
         context = browser.new_context(
             viewport={"width": 1920, "height": 1080},
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
@@ -809,7 +829,9 @@ create_templates()
 # Modify the bottom of your file
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
+    print(f"Starting application on port {port}")
     if os.environ.get('ENVIRONMENT') == 'development':
         app.run(debug=True, host='0.0.0.0', port=port)
     else:
+        print(f"Starting waitress server on port {port}")
         serve(app, host='0.0.0.0', port=port)
