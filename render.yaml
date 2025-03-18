@@ -8,4 +8,5 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: ALLOWED_ORIGINS
+        value: "http://localhost:3000,exp://192.168.43.106:19000"
         sync: false
